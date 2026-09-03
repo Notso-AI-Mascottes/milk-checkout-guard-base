@@ -2,7 +2,7 @@ name: Deleted fork checkout guard probe
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened, closed, edited]
 
 permissions:
   contents: write
