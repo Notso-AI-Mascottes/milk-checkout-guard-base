@@ -1,0 +1,41 @@
+name: Privileged workflow_run checkout probe
+
+on:
+  workflow_run:
+    workflows: [Untrusted PR precursor]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record security-relevant event fields
+        env:
+          HEAD_COMMIT_ID: ${{ github.event.workflow_run.head_commit.id }}
+          HEAD_REPO_ID: ${{ github.event.workflow_run.head_repository.id }}
+          HEAD_REPO_NAME: ${{ github.event.workflow_run.head_repository.full_name }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          WORKFLOW_EVENT: ${{ github.event.workflow_run.event }}
+        run: |
+          printf 'WORKFLOW_EVENT=%s\n' "$WORKFLOW_EVENT"
+          printf 'HEAD_REPO_ID=%s\n' "$HEAD_REPO_ID"
+          printf 'HEAD_REPO_NAME=%s\n' "$HEAD_REPO_NAME"
+          printf 'HEAD_SHA=%s\n' "$HEAD_SHA"
+          printf 'HEAD_COMMIT_ID=%s\n' "$HEAD_COMMIT_ID"
+          printf 'PR_NUMBER=%s\n' "$PR_NUMBER"
+
+      - name: Checkout pull request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: refs/pull/${{ github.event.workflow_run.pull_requests[0].number }}/head
+
+      - name: Run the checked-out CI helper
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MILK_CANARY: ${{ secrets.MILK_CANARY }}
+        run: bash ./ci/payload.sh
