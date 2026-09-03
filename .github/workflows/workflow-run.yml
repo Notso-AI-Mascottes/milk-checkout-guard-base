@@ -28,11 +28,11 @@ jobs:
           printf 'HEAD_COMMIT_ID=%s\n' "$HEAD_COMMIT_ID"
           printf 'PR_NUMBER=%s\n' "$PR_NUMBER"
 
-      - name: Checkout pull request head
+      - name: Checkout workflow head commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          ref: refs/pull/${{ github.event.workflow_run.pull_requests[0].number }}/head
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Run the checked-out CI helper
         env:
