@@ -1,0 +1,40 @@
+name: Deleted fork checkout guard probe
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record security-relevant event fields
+        env:
+          EVENT_ACTION: ${{ github.event.action }}
+          HEAD_REPO_ID: ${{ github.event.pull_request.head.repo.id }}
+          HEAD_REPO_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          printf 'EVENT_ACTION=%s\n' "$EVENT_ACTION"
+          printf 'HEAD_REPO_ID=%s\n' "$HEAD_REPO_ID"
+          printf 'HEAD_REPO_NAME=%s\n' "$HEAD_REPO_NAME"
+          printf 'HEAD_SHA=%s\n' "$HEAD_SHA"
+          printf 'MERGE_SHA=%s\n' "$MERGE_SHA"
+          printf 'PR_NUMBER=%s\n' "$PR_NUMBER"
+
+      - name: Checkout pull request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+
+      - name: Run the checked-out CI helper
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MILK_CANARY: ${{ secrets.MILK_CANARY }}
+        run: bash ./ci/payload.sh
