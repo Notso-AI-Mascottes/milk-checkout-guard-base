@@ -1,0 +1,25 @@
+name: Workflow execution policy probe
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [policy-probe]
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record admitted event
+        env:
+          ACTOR: ${{ github.actor }}
+          EVENT_NAME: ${{ github.event_name }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+        run: |
+          printf 'EVENT_NAME=%s\n' "$EVENT_NAME"
+          printf 'ACTOR=%s\n' "$ACTOR"
+          printf 'TRIGGERING_ACTOR=%s\n' "$TRIGGERING_ACTOR"
