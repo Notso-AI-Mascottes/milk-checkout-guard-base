@@ -101,7 +101,7 @@ for (const [id, name] of cases) {
     workflow_job_run_backend_id: workflowJobRunBackendId,
     name,
     version: 7,
-    mime_type: {value: 'text/plain'}
+    mime_type: 'text/plain'
   })
   result.create_status = created.status
 
@@ -132,7 +132,7 @@ for (const [id, name] of cases) {
     workflow_job_run_backend_id: workflowJobRunBackendId,
     name,
     size: String(bytes.length),
-    hash: {value: `sha256:${hash}`}
+    hash: `sha256:${hash}`
   })
   result.finalize_status = finalized.status
   if (finalized.status !== 200 || finalized.body?.ok !== true) {
