@@ -1,0 +1,10 @@
+name: Controlled artifact-service name probe
+description: Fuzz artifact-service name validation inside a reporter-owned job
+
+outputs:
+  matrix:
+    description: Accepted artifact names and their finalized artifact IDs
+
+runs:
+  using: node24
+  main: ../../../scripts/artifact-name-probe.mjs

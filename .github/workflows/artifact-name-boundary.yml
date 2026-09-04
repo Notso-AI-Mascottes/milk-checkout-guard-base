@@ -3,6 +3,7 @@ name: Raw artifact name boundary probe
 on:
   push:
     paths:
+      - ".github/actions/artifact-name-probe/action.yml"
       - ".github/workflows/artifact-name-boundary.yml"
       - "scripts/artifact-name-probe.mjs"
   workflow_dispatch:
@@ -22,7 +23,7 @@ jobs:
 
       - name: Probe artifact-service name validation
         id: probe
-        run: node scripts/artifact-name-probe.mjs
+        uses: ./.github/actions/artifact-name-probe
 
       - name: Preserve producer results
         if: always()
