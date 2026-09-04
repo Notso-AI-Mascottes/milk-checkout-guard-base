@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Synchronization marker for the owned fork PR probe.
 
 mkdir -p "$PROBE_OUTPUT"
 result="$PROBE_OUTPUT/pr-code-result.json"
