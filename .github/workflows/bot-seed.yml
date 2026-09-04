@@ -1,0 +1,16 @@
+name: Seed bot-owned policy run
+
+on: push
+
+permissions:
+  contents: write
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch with the workflow token
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh api --method POST "repos/$GH_REPO/dispatches" -f event_type=policy-probe
