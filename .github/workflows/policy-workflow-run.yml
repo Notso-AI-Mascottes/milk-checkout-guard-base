@@ -1,0 +1,23 @@
+name: Workflow execution policy workflow_run probe
+
+on:
+  workflow_run:
+    workflows: [Workflow execution policy probe]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record admitted chained event
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SOURCE_EVENT: ${{ github.event.workflow_run.event }}
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          printf 'EVENT_NAME=%s\n' "$EVENT_NAME"
+          printf 'SOURCE_EVENT=%s\n' "$SOURCE_EVENT"
+          printf 'SOURCE_RUN_ID=%s\n' "$SOURCE_RUN_ID"
