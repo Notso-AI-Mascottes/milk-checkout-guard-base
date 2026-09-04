@@ -1,0 +1,56 @@
+name: OIDC pull-request boundary probe
+
+on:
+  pull_request:
+    paths:
+      - ".oidc-probe/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  execute-pr-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the triggering revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Execute code from the checked-out revision
+        env:
+          PROBE_OUTPUT: ${{ runner.temp }}/oidc-pr-boundary
+        run: bash .oidc-probe/pr-code.sh
+
+      - name: Record the intended step-level restriction
+        if: always()
+        env:
+          PROBE_OUTPUT: ${{ runner.temp }}/oidc-pr-boundary
+          HEAD_IS_FORK: ${{ github.event.pull_request.head.repo.fork || false }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          BASE_REPOSITORY: ${{ github.repository }}
+        run: |
+          mkdir -p "$PROBE_OUTPUT"
+          jq -n \
+            --arg event "$GITHUB_EVENT_NAME" \
+            --arg head_is_fork "$HEAD_IS_FORK" \
+            --arg head_repository "$HEAD_REPOSITORY" \
+            --arg base_repository "$BASE_REPOSITORY" \
+            --argjson intended_oidc_step_would_run \
+              '${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}' \
+            '{
+              event: $event,
+              head_is_fork: ($head_is_fork == "true"),
+              head_repository: $head_repository,
+              base_repository: $base_repository,
+              intended_oidc_step_would_run: $intended_oidc_step_would_run
+            }' > "$PROBE_OUTPUT/boundary.json"
+
+      - name: Preserve decoded claims and boundary facts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: oidc-pr-boundary-${{ github.run_id }}
+          path: ${{ runner.temp }}/oidc-pr-boundary/
+          if-no-files-found: error
+
